@@ -8,7 +8,7 @@ they can be translated into each other. These are mainly IRIS, commune,
 departement and région.
 """
 
-YEAR = 2017
+YEAR = 2019  # 2019 IRIS geography is used for the dissemination of 2017 Census data
 SOURCE = "codes_%d/reference_IRIS_geo%d.xls" % (YEAR, YEAR)
 
 def configure(context):

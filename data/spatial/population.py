@@ -6,8 +6,8 @@ import os
 Loads aggregate population data.
 """
 
-YEAR = 2015
-SOURCE = "rp_%d/base-ic-evol-struct-pop-%d.xls" % (YEAR, YEAR)
+YEAR = 2017
+SOURCE = "rp_2015/base-ic-evol-struct-pop-%d.xls" % (YEAR)
 
 def configure(context):
     context.config("data_path")
@@ -16,10 +16,10 @@ def configure(context):
 def execute(context):
     df_population = pd.read_excel(
         "%s/%s" % (context.config("data_path"), SOURCE),
-        skiprows = 5, sheet_name = "IRIS", usecols = ["IRIS", "COM", "DEP", "REG", "P15_POP"]
+        skiprows = 5, sheet_name = "IRIS", usecols = ["IRIS", "COM", "DEP", "REG", "P17_POP"]
     ).rename(columns = {
         "IRIS": "iris_id", "COM": "commune_id", "DEP": "departement_id", "REG": "region_id",
-        "P15_POP": "population"
+        "P17_POP": "population"
     })
 
     df_population["iris_id"] = df_population["iris_id"].astype("category")

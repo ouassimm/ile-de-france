@@ -1,4 +1,3 @@
-from tqdm import tqdm
 import pandas as pd
 import numpy as np
 import data.hts.hts as hts
@@ -9,9 +8,11 @@ This stage cleans the French population census:
   - Clean up spatial information and sociodemographic attributes
 """
 
+
 def configure(context):
     context.stage("data.census.raw")
     context.stage("data.spatial.codes")
+
 
 def execute(context):
     df = pd.read_hdf("%s/census.hdf" % context.path("data.census.raw"))
@@ -69,8 +70,9 @@ def execute(context):
     df.loc[df["TRANS"] == "1", "commute_mode"] = np.nan
     df.loc[df["TRANS"] == "2", "commute_mode"] = "walk"
     df.loc[df["TRANS"] == "3", "commute_mode"] = "bike"
-    df.loc[df["TRANS"] == "4", "commute_mode"] = "car"
-    df.loc[df["TRANS"] == "5", "commute_mode"] = "pt"
+    df.loc[df["TRANS"] == "4", "commute_mode"] = "car"  # motorbikes assumed as cars
+    df.loc[df["TRANS"] == "5", "commute_mode"] = "car"
+    df.loc[df["TRANS"] == "6", "commute_mode"] = "pt"
     df.loc[df["TRANS"] == "Z", "commute_mode"] = np.nan
     df["commute_mode"] = df["commute_mode"].astype("category")
 
@@ -105,8 +107,8 @@ def execute(context):
     df["socioprofessional_class"] = df["CS1"].astype(np.int)
 
     # Place of work or education
-    df["work_outside_region"] = df["ILT"].isin(("4", "5", "6"))
-    df["education_outside_region"] = df["ILETUD"].isin(("4", "5", "6"))
+    df["work_outside_region"] = df["ILT"].isin(("4", "5", "6", "7"))
+    df["education_outside_region"] = df["ILETUD"].isin(("4", "5", "6", "7"))
 
     # Consumption units
     df = pd.merge(df, hts.calculate_consumption_units(df), on = "household_id")
