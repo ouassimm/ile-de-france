@@ -8,21 +8,22 @@ import os
 Loads raw OD data from French census data.
 """
 
+
 def configure(context):
     context.stage("data.spatial.codes")
     context.config("data_path")
+
 
 def execute(context):
     df_codes = context.stage("data.spatial.codes")
     requested_communes = df_codes["commune_id"].unique()
 
     # First, load work
-
-    table = simpledbf.Dbf5("%s/rp_2015/FD_MOBPRO_2015.dbf" % context.config("data_path"))
+    table = simpledbf.Dbf5("%s/rp_2015/FD_MOBPRO_2017.dbf" % context.config("data_path"))
     records = []
 
-    with context.progress(label = "Reading work flows ...", total = 7943392) as progress:
-        for df_chunk in table.to_dataframe(chunksize = 10240):
+    with context.progress(label="Reading work flows ...", total=7943392) as progress:
+        for df_chunk in table.to_dataframe(chunksize=10240):
             progress.update(len(df_chunk))
 
             f = df_chunk["COMMUNE"].isin(requested_communes)
@@ -39,11 +40,11 @@ def execute(context):
 
     # Second, load education
 
-    table = simpledbf.Dbf5("%s/rp_2015/FD_MOBSCO_2015.dbf" % context.config("data_path"))
+    table = simpledbf.Dbf5("%s/rp_2015/FD_MOBSCO_2017.dbf" % context.config("data_path"))
     records = []
 
-    with context.progress(label = "Reading education flows ...", total = 4782736) as progress:
-        for df_chunk in table.to_dataframe(chunksize = 10240):
+    with context.progress(label="Reading education flows ...", total=4782736) as progress:
+        for df_chunk in table.to_dataframe(chunksize=10240):
             progress.update(len(df_chunk))
 
             f = df_chunk["COMMUNE"].isin(requested_communes)
@@ -58,14 +59,15 @@ def execute(context):
 
     pd.concat(records).to_hdf("%s/education.hdf" % context.cache_path, "movements")
 
+
 def validate(context):
-    if not os.path.exists("%s/rp_2015/FD_MOBPRO_2015.dbf" % context.config("data_path")):
+    if not os.path.exists("%s/rp_2015/FD_MOBPRO_2017.dbf" % context.config("data_path")):
         raise RuntimeError("RP MOBPRO data is not available")
 
-    if not os.path.exists("%s/rp_2015/FD_MOBSCO_2015.dbf" % context.config("data_path")):
+    if not os.path.exists("%s/rp_2015/FD_MOBSCO_2017.dbf" % context.config("data_path")):
         raise RuntimeError("RP MOBSCO data is not available")
 
     return [
-        os.path.getsize("%s/rp_2015/FD_MOBPRO_2015.dbf" % context.config("data_path")),
-        os.path.getsize("%s/rp_2015/FD_MOBSCO_2015.dbf" % context.config("data_path"))
+        os.path.getsize("%s/rp_2015/FD_MOBPRO_2017.dbf" % context.config("data_path")),
+        os.path.getsize("%s/rp_2015/FD_MOBSCO_2017.dbf" % context.config("data_path"))
     ]
