@@ -32,7 +32,7 @@ def execute(context):
 
     # Merge departement into households
     df_spatial = df_spatial[["ZF__2015", "DepCom"]].copy()
-    df_spatial["ZFM"] = df_spatial["ZF__2015"].astype(str).str.pad(width=8, side='left', fillchar='0')
+    df_spatial["ZFM"] = df_spatial["ZF__2015"]
     df_spatial["departement_id"] = df_spatial["DepCom"].str[:2]
     df_spatial = df_spatial[["ZFM", "departement_id"]]
 
@@ -68,7 +68,7 @@ def execute(context):
 
     # Weight
     df_persons["person_weight"] = df_persons["COEP"].astype(np.float)
-    df_households["household_weight"] = df_households["COE0"].astype(np.float)
+    df_households["household_weight"] = df_households["COEM"].astype(np.float)
 
     # Clean age
     df_persons["age"] = df_persons["P4"].astype(np.int)
@@ -157,9 +157,9 @@ def execute(context):
 
     # Add weight to trips
     df_trips = pd.merge(
-        df_trips, df_persons[["person_id", "COE1"]], on = "person_id", how = "left"
-    ).rename(columns = { "COE1": "trip_weight" })
-    df_persons["trip_weight"] = df_persons["COE1"]
+        df_trips, df_persons[["person_id", "COEP"]], on = "person_id", how = "left"
+    ).rename(columns = { "COEP": "trip_weight" })
+    df_persons["trip_weight"] = df_persons["COEP"]
 
     # Chain length
     df_count = df_trips[["person_id"]].groupby("person_id").size().reset_index(name = "number_of_trips")
