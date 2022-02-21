@@ -176,7 +176,8 @@ def execute(context):
     df_households = pd.merge(df_households, hts.calculate_consumption_units(df_persons), on = "household_id")
 
     # Socioprofessional class
-    df_persons["socioprofessional_class"] = df_persons["PCSC"].fillna(8).astype(int)
+    df_persons["socioprofessional_class"] = df_persons["P11"].str[:1].fillna("8").astype(int)
+    df_persons.loc[df_persons["P9"] == "7", "socioprofessional_class"] = 7  # Retired individuals
 
     # Check departure and arrival times
     assert np.count_nonzero(df_trips["departure_time"].isna()) == 0
