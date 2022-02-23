@@ -25,6 +25,7 @@ config:
   data_path: /mnt/workplace/research/projects/synthetic_population/data
   output_path: /mnt/workplace/research/projects/synthetic_population/tmp/output_3
   regions: [ ]
-  departments: [69, 69M]
+  departments: [69]
+  metropolis: lyon
   # Only interesting if you run the simulation
   java_memory: 14G

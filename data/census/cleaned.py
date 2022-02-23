@@ -12,10 +12,16 @@ This stage cleans the French population census:
 def configure(context):
     context.stage("data.census.raw")
     context.stage("data.spatial.codes")
-
+    context.stage("data.spatial.metropolis")
+    context.config("metropolis")
 
 def execute(context):
     df = pd.read_hdf("%s/census.hdf" % context.path("data.census.raw"))
+
+    if context.config("metropolis") == "lyon":
+        # Filter census to match Lyon Metropolitan Area
+        metropole_lyon = context.stage("data.spatial.metropolis")
+        df = df.merge(metropole_lyon, on="IRIS")
 
     # Construct household IDs for persons with NUMMI != Z
     df_household_ids = df[["CANTVILLE", "NUMMI"]]
@@ -53,11 +59,11 @@ def execute(context):
     df_codes = context.stage("data.spatial.codes")
 
     excess_communes = set(df["commune_id"].unique()) - set(df_codes["commune_id"].unique())
-    if not excess_communes == {"undefined"}:
+    if not (excess_communes == {"undefined"} or len(excess_communes) == 0):
         raise RuntimeError("Found additional communes: %s" % excess_communes)
 
     excess_iris = set(df["iris_id"].unique()) - set(df_codes["iris_id"].unique())
-    if not excess_iris == {"undefined"}:
+    if not (excess_iris == {"undefined"} or len(excess_iris) == 0):
         raise RuntimeError("Found additional IRIS: %s" % excess_iris)
 
     # Age
