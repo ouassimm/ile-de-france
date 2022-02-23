@@ -1,5 +1,4 @@
 import data.hts.hts as hts
-import numpy as np
 
 """
 This stage filters out observations which live or work outside of the area.
@@ -32,7 +31,8 @@ def execute(context):
     remove_ids = set()
 
     remove_ids |= set(df_trips[
-        ~df_trips["origin_departement_id"].astype(str).isin(requested_departments) | ~df_trips["destination_departement_id"].astype(str).isin(requested_departments)
+        ~df_trips["origin_departement_id"].astype(str).isin(requested_departments) |
+        ~df_trips["destination_departement_id"].astype(str).isin(requested_departments)
     ]["person_id"].unique())
 
     df_persons = df_persons[~df_persons["person_id"].isin(remove_ids)]

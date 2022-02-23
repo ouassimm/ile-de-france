@@ -35,7 +35,7 @@ TRIP_COLUMNS = {
     "MODP": int, "D11": int, "D12": int  # mode, euclidean_distance, routed_distance
 }
 
-SPATIAL_COLUMNS = {"DepCom": str, "ZF__2015": str}
+SPATIAL_COLUMNS = {"DepCom": str, "ZF__2015": str, "DComIris": str}
 
 def execute(context):
     # Load households

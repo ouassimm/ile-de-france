@@ -26,8 +26,9 @@ def configure(context):
 
     context.stage("synthesis.population.sampled")
     context.stage("synthesis.population.income")
+    context.stage("data.spatial.spatial_matching")
 
-    hts = context.config("hts")
+    context.config("hts")
     context.stage("data.hts.selected", alias = "hts")
 
 @numba.jit(nopython = True, parallel = True)
@@ -166,13 +167,16 @@ def execute(context):
     df_target = context.stage("synthesis.population.sampled")
 
     # Define matching attributes
-    AGE_BOUNDARIES = [14, 29, 44, 59, 74, 1000]
+    AGE_BOUNDARIES = [14, 18, 23, 30, 44, 62, 1000]
     df_target["age_class"] = np.digitize(df_target["age"], AGE_BOUNDARIES, right = True)
     df_source["age_class"] = np.digitize(df_source["age"], AGE_BOUNDARIES, right = True)
 
+    HOUSEHOLD_SIZE_BOUNDARIES = [1, 2, 5, 100]
+    df_target["household_size_class"] = np.digitize(df_target["household_size"], HOUSEHOLD_SIZE_BOUNDARIES, right=True)
+    df_source["household_size_class"] = np.digitize(df_source["household_size"], HOUSEHOLD_SIZE_BOUNDARIES, right=True)
+
     if "income_class" in df_source:
         df_income = context.stage("synthesis.population.income")[["household_id", "household_income"]]
-
         df_target = pd.merge(df_target, df_income)
         df_target["income_class"] = INCOME_CLASS[hts](df_target)
 
@@ -181,7 +185,18 @@ def execute(context):
 
     columns = ["sex", "any_cars", "age_class", "socioprofessional_class"]
     if "income_class" in df_source: columns += ["income_class"]
-    columns += ["departement_id"]
+
+    # Define a spatial matching column
+    spatial_match = context.stage("data.spatial.spatial_matching")
+    df_source = df_source.merge(spatial_match, on="IRIS", how="left")
+    df_target = df_target.merge(spatial_match, left_on="iris_id", right_on="IRIS", how="left")
+
+    df_source.loc[df_source["ZONE"].isna(), "ZONE"] = spatial_match["ZONE"].max() + 1
+    df_target.loc[df_target["ZONE"].isna(), "ZONE"] = spatial_match["ZONE"].max() + 1
+    df_source["ZONE"] = df_source["ZONE"].astype(int)
+    df_target["ZONE"] = df_target["ZONE"].astype(int)
+
+    columns += ["ZONE"]
 
     # Perform statistical matching
     df_source = df_source.rename(columns = { "person_id": "hts_id" })

@@ -31,11 +31,10 @@ def execute(context):
     df_households, df_persons, df_trips, df_spatial = context.stage("data.hts.edgt_lyon.raw_adisp")
 
     # Merge departement into households
-    df_spatial = df_spatial[["ZF__2015", "DepCom"]].copy()
     df_spatial["ZFM"] = df_spatial["ZF__2015"]
     df_spatial["departement_id"] = df_spatial["DepCom"].str[:2]
-    df_spatial = df_spatial[["ZFM", "departement_id"]]
-
+    df_spatial["IRIS"] = df_spatial["DComIris"]
+    df_spatial = df_spatial[["ZFM", "departement_id", "IRIS"]]
     # Attention, some households get lost here!
     df_households = pd.merge(df_households, df_spatial, on = "ZFM", how = "left")
     df_households["departement_id"] = df_households["departement_id"].fillna("unknown")
@@ -52,7 +51,7 @@ def execute(context):
     df_households["household_id"] = np.arange(len(df_households))
 
     df_persons = pd.merge(
-        df_persons, df_households[["edgt_household_id", "household_id", "departement_id"]],
+        df_persons, df_households[["edgt_household_id", "household_id", "departement_id", "IRIS"]],
         on = ["edgt_household_id"]
     ).sort_values(by = ["household_id", "edgt_person_id"])
     df_persons["person_id"] = np.arange(len(df_persons))
